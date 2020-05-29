@@ -49,6 +49,13 @@ function redis() {
         echo $MEM "MB memory using by Redis service"
 }
 
+function supervisor() {
+        MEMS=$(ps aux| awk '/supervisor/{total+=$4} END {print total}') # memory using by service in percentage
+        AMEM=$(free -m | grep Mem |awk '{print $2}') # total free memory in system
+        MEM=$( echo "$MEMS/100*$AMEM" | bc -l ) # converting to MB
+        MEM=$( printf "%.2f\n" $MEM ) #Rounding decimal place
+        echo $MEM "MB memory using by Supervisor service"
+
 function php() {
         MEMS=$(ps aux| awk '/php/{total+=$4} END {print total}') # memory using by service in percentage
         AMEM=$(free -m | grep Mem |awk '{print $2}') # total free memory in system
@@ -60,7 +67,7 @@ function main()
 {
         if [ $# -lt 1 ];
         then
-                echo "usage: nginx | apache | mysql | beanstalk | memcached | redis | php "
+                echo "usage: nginx | apache | mysql | beanstalk | memcached | redis | php | supervisor"
                 exit 1
         fi
 
@@ -81,6 +88,8 @@ function main()
                 redis $@
         elif [ $SERV = "php" ]; then
                 php $@
+        elif [ $SERV = "supervisor" ]; then
+                supervisor $@
         else
                 echo [$SERV] a bad argument.
         fi
